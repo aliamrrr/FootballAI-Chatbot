@@ -2,7 +2,7 @@ pandas
 langchain
 streamlit
 openai
-pandasai
+pandasai==2.4.2
 streamlit-chat
 tiktoken
 faiss-cpu
