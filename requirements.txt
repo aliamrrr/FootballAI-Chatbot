@@ -7,3 +7,4 @@ tiktoken
 faiss-cpu
 python-dotenv
 streamlit-chat 
+numpy
