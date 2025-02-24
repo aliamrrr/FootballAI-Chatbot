@@ -9,3 +9,4 @@ faiss-cpu
 python-dotenv
 streamlit-chat 
 numpy
+langchain_community.document_loaders
