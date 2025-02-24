@@ -2,7 +2,7 @@
 
 ## Introduction 🌟
 
-Welcome to the **Soccer Analytics AI** repository! This project combines data analysis, AI models, and visualization tools to help with football data analysis. It's designed for analysts, coaches, and anyone interested in football stats, even without coding experience.
+Welcome to the **Football AI Chatbot** repository! This project combines data analysis, AI models, and visualization tools to help with football data analysis. It's designed for analysts, coaches, and anyone interested in football stats, even without coding experience.
 
 ### Why a Data Analysis Assistant? 🤔
 
