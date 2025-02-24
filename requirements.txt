@@ -1,5 +1,5 @@
+pandas
 langchain
-numpy
 streamlit
 openai
 pandasai
