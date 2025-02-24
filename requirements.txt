@@ -1,6 +1,6 @@
 langchain
 openai
-pandasai=
+pandasai
 streamlit
 streamlit-chat
 tiktoken
