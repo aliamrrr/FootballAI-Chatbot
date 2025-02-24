@@ -9,4 +9,4 @@ faiss-cpu
 python-dotenv
 streamlit-chat 
 numpy
-langchain-community
+langchain-community==0.3.18
