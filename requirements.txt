@@ -1,7 +1,9 @@
 langchain
+pandas==1.5.3  # ou une autre version stable
+numpy==1.24.2  # assurez-vous que numpy est aussi spécifié
+streamlit==1.18.0  # ou la version que vous utilisez
 openai
 pandasai
-streamlit
 streamlit-chat
 tiktoken
 faiss-cpu
