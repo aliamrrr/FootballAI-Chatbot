@@ -1,6 +1,6 @@
 langchain
-numpy==1.23  # assurez-vous que numpy est aussi spécifié
-streamlit==1.18.0  # ou la version que vous utilisez
+numpy
+streamlit
 openai
 pandasai
 streamlit-chat
