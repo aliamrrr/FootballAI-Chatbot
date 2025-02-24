@@ -1,5 +1,4 @@
 langchain
-pandas==1.5.3  # ou une autre version stable
 numpy==1.23  # assurez-vous que numpy est aussi spécifié
 streamlit==1.18.0  # ou la version que vous utilisez
 openai
