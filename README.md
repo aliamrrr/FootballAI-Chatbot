@@ -16,11 +16,11 @@ Here are some examples of the capabilities of the **Soccer Analytics AI**:
 
 1. **Data Analysis Example**:
     - Upload a CSV with football match data, and ask the assistant questions about the data. The assistant will provide structured responses and statistics based on the dataset.
-    - ![Example Response](path-to-your-image-1.jpg)
+    - ![Example Response](images/test.PNG)
 
 2. **Data Visualization Example**:
     - The assistant can also generate visualizations based on your requests. Simply describe the type of chart or graph you want, and it will return the corresponding visualization.
-    - ![Example Visualization](path-to-your-image-2.jpg)
+    - ![Example Visualization](images/top.png)
 
 ## How to Use
 
