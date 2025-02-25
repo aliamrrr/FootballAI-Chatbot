@@ -20,7 +20,7 @@ Here are some examples of the capabilities of the **Soccer Analytics AI**:
 
 2. **Data Visualization Example**:
     - The assistant can also generate visualizations based on your requests. Simply describe the type of chart or graph you want, and it will return the corresponding visualization.
-    - ![Example Visualization](images/visualizatIon.PNG)
+    - ![Example Visualization](images/visualization.PNG)
 
 ## How to Use
 
