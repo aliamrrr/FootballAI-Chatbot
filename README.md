@@ -35,7 +35,7 @@ streamlit run main.py
 
 ### 2. Configure API Key
 
-To use the chatbot feature, you'll need an OpenAI API key. If you don't have one already, you can sign up for an API key from OpenAI [here](https://beta.openai.com/signup/).
+To use the chatbot feature, you'll need an OpenAI API key. If you don't have one already, you can sign up for an API key from OpenAI [here](https://platform.openai.com/api-keys).
 
 ### 3. Upload Football Data ⚽📊
 
