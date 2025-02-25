@@ -1,20 +1,49 @@
-import streamlit as st 
+# === General Imports ===
 import os
+import time
+import tempfile
+from io import StringIO
+
+# === Data Manipulation & Visualization ===
 import pandas as pd
 import matplotlib.pyplot as plt
-from io import StringIO
-import tempfile
+
+# === Streamlit & User Interface ===
+import streamlit as st
+from PIL import Image
+
+# === LangChain & AI ===
 from langchain.document_loaders.csv_loader import CSVLoader
 from langchain.vectorstores import FAISS
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.prompts import PromptTemplate
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
-import time
+
+# === PandasAI ===
 from pandasai.llm import OpenAI
 from pandasai import SmartDataframe
-from PIL import Image
 
+# Initialization and Setup
+def init_template():
+    if 'template' not in st.session_state:
+     st.session_state.template = """
+        You are a data analyst providing formal, scientific responses. Follow these guidelines:
+        1/ Base responses strictly on provided data
+        2/ If data is unavailable, state "Insufficient information"
+        3/ Include relevant statistics
+        4/ Keep responses under 100 words
+        5/ Use bullet points for multiple results
+
+        User query: {question}
+
+        Relevant data: {context}
+
+        Structured response:
+        """
+
+
+# Document Processing
 def process_document(file):
     if isinstance(file, pd.DataFrame):
         with tempfile.NamedTemporaryFile(delete=False, mode='w', suffix='.csv') as tmp_file:
@@ -29,27 +58,13 @@ def process_document(file):
     document = loader.load()
     return document
 
+# Vector Store and Embedding
 def query_store(query, store):
     response = store.similarity_search(query, k=3)
     return [doc.page_content for doc in response]
 
-def init_analytical_bot():
+def init_analytical_bot(template):
     llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo")
-    
-    template = """
-    You are a data analyst providing formal, scientific responses. Follow these guidelines:
-    1/ Base responses strictly on provided data
-    2/ If data is unavailable, state "Insufficient information"
-    3/ Include relevant statistics
-    4/ Keep responses under 100 words
-    5/ Use bullet points for multiple results
-
-    User query: {question}
-
-    Relevant data: {context}
-
-    Structured response:
-    """
     
     prompt = PromptTemplate(input_variables=["question", "context"], template=template)
     return LLMChain(llm=llm, prompt=prompt)
@@ -57,6 +72,7 @@ def init_analytical_bot():
 def init_viz_bot():
     llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo")
     
+    # Can be modified by the "customize tour answers" section
     template = """
     Generate Python visualization code for ANY CSV data. Rules:
     1/ Use matplotlib/seaborn
@@ -72,7 +88,12 @@ def init_viz_bot():
     prompt = PromptTemplate(input_variable="request", template=template)
     return LLMChain(llm=llm, prompt=prompt)
 
+# Main page
 def main():
+    init_template()
+    
+    # Interface setup
+
     st.set_page_config(
         page_title="Soccer Analytics AI",
         page_icon="⚽",
@@ -114,8 +135,10 @@ def main():
         st.sidebar.error("📢 Upload club data & enter API key to start analysis!")
         return
 
-    tab0, tab1, tab2 = st.tabs(["🔧 Column Selector", "📈 Match Analysis", "📊 Performance Visualization"])
+    # Tabs
+    tab0, tab1, tab2, tab3 = st.tabs(["🔧 Column Selector", "📈 Match Analysis", "📊 Performance Visualization","✍️ Customize Your Answers"])
 
+    # Columns selection (Click to delete and press Prepare data)
     with tab0:
         st.header("🔧 Select Columns for Analysis")
         df = pd.read_csv(uploaded_file)
@@ -158,7 +181,8 @@ def main():
             
         st.subheader("Filtered Data Preview:")
         st.write(st.session_state.filtered_df.head())
-
+    
+    # Textual Chatbot (OPENAI based)
     with tab1:
         st.header("📊 Data Analysis")
         st.markdown("*Analyze football data*")
@@ -183,13 +207,15 @@ def main():
             st.session_state.messages.append({"role": "user", "content": prompt})
 
             context_data = query_store(prompt, vector_store)
-            analyst_bot = init_analytical_bot()
+            print(st.session_state.template)
+            analyst_bot = init_analytical_bot(st.session_state.template)
             response = analyst_bot.run(question=prompt, context=context_data)
 
             with st.chat_message("assistant"):
                 st.markdown(response)
             st.session_state.messages.append({"role": "assistant", "content": response})
 
+    # Visualizations (and text) chatbot (PandasAI and OPENAI Based)
     with tab2:
         st.header("📊 Smart Data Visualization")
         st.markdown("*Explore and visualize football data through insightful charts*")
@@ -203,6 +229,7 @@ def main():
         os.makedirs(temp_chart_dir, exist_ok=True)
 
         llm = OpenAI(api_token=openai_key)
+        
         smart_df = SmartDataframe(df, config={
             "llm": llm,
             "save_charts": True,
@@ -215,6 +242,11 @@ def main():
         if "viz_history" not in st.session_state:
             st.session_state.viz_history = []
 
+        # Initialize context if it doesn't exist
+        if "context" not in st.session_state:
+            st.session_state.context = []
+
+        # Display previous interactions (messages)
         for msg in st.session_state.viz_history:
             with st.chat_message(msg["role"]):
                 if msg["type"] == "text":
@@ -222,7 +254,10 @@ def main():
                 elif msg["type"] == "image":
                     st.image(msg["image"], caption=msg.get("caption", "Generated Chart"))
 
+        # Take input for new visualization request
         if viz_prompt := st.chat_input("Describe the visualization you need..."):
+            # Add the new prompt to the context
+            st.session_state.context.append(f"User: {viz_prompt}")
             st.session_state.viz_history.append({
                 "role": "user",
                 "type": "text",
@@ -230,7 +265,11 @@ def main():
             })
             
             try:
-                response = smart_df.chat(viz_prompt)
+                # Full context for the assistant
+
+                full_prompt = f"{viz_prompt}\nContext: {st.session_state.context}"
+
+                response = smart_df.chat(full_prompt)
                 time.sleep(2)
 
                 chart_files = sorted(
@@ -242,6 +281,7 @@ def main():
                 if chart_files:
                     latest_chart = os.path.join(temp_chart_dir, chart_files[0])
                     
+                    # Add response and chart to the session history
                     st.session_state.viz_history.append({
                         "role": "assistant",
                         "type": "image",
@@ -261,6 +301,9 @@ def main():
                     with st.chat_message("assistant"):
                         st.markdown(response)
 
+                # Add the assistant's response to the context
+                st.session_state.context.append(f"Assistant: {response}")
+
             except Exception as e:
                 error_msg = f"Visualization error: {str(e)}"
                 st.session_state.viz_history.append({
@@ -270,5 +313,52 @@ def main():
                 })
                 st.error(error_msg)
 
+    with tab3:
+        st.header("✍️ Customize Your Answers Template")
+        
+        col1, col2 = st.columns(2)
+
+        with col1:
+            # Section Template
+            st.subheader("Template for Chatbot")
+            template = st.text_area("Modify the Template", """
+            You are a data analyst providing formal, scientific responses. Follow these guidelines:
+            1/ Base responses strictly on provided data
+            2/ If data is unavailable, state "Insufficient information"
+            3/ Include relevant statistics
+            4/ Keep responses under 100 words
+            5/ Use bullet points for multiple results
+
+            User query: {question}
+
+            Relevant data: {context}
+
+            Structured response:
+            """, height=300)
+
+            # template to session state
+            if st.button("Save Template"):
+                st.session_state.template = template
+                st.success("Template saved!")
+        
+        with col2:
+            # Section Context for Visualization
+            st.subheader("Context for Smart Visualization")
+            # Allow the user to add or modify context for the smart visualization
+            new_context = st.text_area("Modify Context for Visualization", "", height=150)
+            
+            # Save context when the user clicks "Save Context"
+            if st.button("Save Context"):
+                if new_context:
+                    if "context" not in st.session_state:
+                        st.session_state.context = []
+                    st.session_state.context.append(new_context)
+                    st.success("Context updated!")
+                else:
+                    st.error("Context cannot be empty.")
+            
+            st.subheader("Current Context")
+            st.write(st.session_state.context if st.session_state.context else "No context provided.")
+     
 if __name__ == "__main__":
     main()
